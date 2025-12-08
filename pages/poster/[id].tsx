@@ -3,7 +3,14 @@ import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { supabase } from '../../lib/supabase';
 
-type Post = { id: string; title: string | null; caption: string | null; media_urls: string[] | null; created_at: string };
+type Post = {
+  id: string;
+  title: string | null;
+  caption: string | null;
+  client_name: string | null;
+  media_urls: string[] | null;
+  created_at: string;
+};
 type Profile = {
   id: string;
   first_name: string | null;
@@ -15,6 +22,7 @@ type Profile = {
 
 export default function PosterPage({ profile, posts }: { profile: Profile | null; posts: Post[] }) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   if (!profile) return <main style={{ padding: 24 }}>Not found</main>;
 
@@ -57,7 +65,10 @@ export default function PosterPage({ profile, posts }: { profile: Profile | null
                 <button
                   key={p.id}
                   className="card"
-                  onClick={() => setSelectedPost(p)}
+                  onClick={() => {
+                    setSelectedPost(p);
+                    setActiveImageIndex(0);
+                  }}
                   type="button"
                   aria-label={p.title || 'View post'}
                 >
@@ -87,18 +98,62 @@ export default function PosterPage({ profile, posts }: { profile: Profile | null
               <div>
                 <div className="modal-title">{selectedPost.title || 'Post details'}</div>
                 <div className="date">{new Date(selectedPost.created_at).toLocaleString()}</div>
+                {selectedPost.client_name && <div className="client">Client: {selectedPost.client_name}</div>}
               </div>
               <button type="button" className="close" onClick={() => setSelectedPost(null)}>
                 ×
               </button>
             </div>
-            {selectedPost.media_urls?.[0] && (
-              <img
-                src={selectedPost.media_urls[0]}
-                alt={selectedPost.title || 'Post image'}
-                className="modal-image"
-              />
-            )}
+            {selectedPost.media_urls?.length ? (
+              <div className="gallery">
+                <div className="main-media">
+                  <img
+                    src={selectedPost.media_urls[activeImageIndex]}
+                    alt={selectedPost.title || 'Post image'}
+                    className="modal-image"
+                  />
+                  {selectedPost.media_urls.length > 1 && (
+                    <div className="controls">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveImageIndex((idx) =>
+                            idx === 0 ? selectedPost.media_urls!.length - 1 : idx - 1
+                          )
+                        }
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveImageIndex((idx) =>
+                            idx === selectedPost.media_urls!.length - 1 ? 0 : idx + 1
+                          )
+                        }
+                      >
+                        ›
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {selectedPost.media_urls.length > 1 && (
+                  <div className="thumbnails">
+                    {selectedPost.media_urls.map((url, i) => (
+                      <button
+                        key={url}
+                        type="button"
+                        className={`thumb ${i === activeImageIndex ? 'active' : ''}`}
+                        onClick={() => setActiveImageIndex(i)}
+                        aria-label={`View image ${i + 1}`}
+                      >
+                        <img src={url} alt={`Media ${i + 1}`} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null}
             {selectedPost.caption && <p className="modal-caption">{selectedPost.caption}</p>}
           </div>
         </div>
@@ -280,6 +335,63 @@ export default function PosterPage({ profile, posts }: { profile: Profile | null
           object-fit: cover;
           margin-bottom: 12px;
         }
+        .gallery {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .main-media {
+          position: relative;
+        }
+        .controls {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 10px;
+        }
+        .controls button {
+          background: rgba(0, 0, 0, 0.55);
+          color: #fff;
+          border: none;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 20px;
+          line-height: 1;
+        }
+        .thumbnails {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: 72px;
+          gap: 8px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+        .thumb {
+          border: 2px solid transparent;
+          padding: 0;
+          border-radius: 8px;
+          overflow: hidden;
+          cursor: pointer;
+          background: transparent;
+        }
+        .thumb.active {
+          border-color: #111827;
+        }
+        .thumb img {
+          width: 100%;
+          height: 64px;
+          object-fit: cover;
+          display: block;
+        }
+        .client {
+          color: #334155;
+          font-size: 14px;
+          margin-top: 4px;
+        }
         .modal-caption {
           color: #334155;
           line-height: 1.6;
@@ -301,7 +413,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   const { data: posts } = await supabase
     .from('poster_social_posts')
-    .select('id, title, caption, media_urls, created_at')
+    .select('id, title, caption, client_name, media_urls, created_at')
     .eq('profile_id', id)
     .order('created_at', { ascending: false });
 
