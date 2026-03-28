@@ -83,7 +83,7 @@ export default function Home() {
               openings, send alerts instantly, and hire confidently from one platform.
             </p>
             <div className={styles.ctas}>
-              <a className={styles.primary} href="mailto:support@mygigs.co">
+              <a className={styles.primary} href="mailto:joeapter@icloud.com">
                 Book a Demo
               </a>
               <Link className={styles.secondary} href="/poster/1">
@@ -155,7 +155,7 @@ export default function Home() {
               and spreadsheets.
             </p>
             <div className={styles.ctas}>
-              <a className={styles.primary} href="mailto:support@mygigs.co">
+              <a className={styles.primary} href="mailto:joeapter@icloud.com">
                 Contact Sales
               </a>
               <Link className={styles.secondary} href="/privacy-policy">
@@ -169,7 +169,7 @@ export default function Home() {
           <p>© {new Date().getFullYear()} Gigs. All rights reserved.</p>
           <div className={styles.footerLinks}>
             <Link href="/privacy-policy">Privacy Policy</Link>
-            <a href="mailto:support@mygigs.co">support@mygigs.co</a>
+            <a href="mailto:joeapter@icloud.com">joeapter@icloud.com</a>
           </div>
         </footer>
       </div>

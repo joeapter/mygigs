@@ -113,7 +113,7 @@ export default function PrivacyPolicyPage() {
           <h2>Contact</h2>
           <p>
             For privacy questions or requests, contact:{" "}
-            <a href="mailto:support@mygigs.co">support@mygigs.co</a>
+            <a href="mailto:joeapter@icloud.com">joeapter@icloud.com</a>
           </p>
 
           <p className={styles.backLink}>
